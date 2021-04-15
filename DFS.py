@@ -1,13 +1,8 @@
 import numpy as np
+import glob
 
-Gx=9
-Gy=9
-
-f = open ('Map1010')
-Map = [list(map(int,data.strip())) for data in f.readlines()]
-f.close()
-print (np.array(Map))
-
+Gx=99
+Gy=99
 
 def next(stack,x,y,depth):
     if Map[x-1][y] < 1:
@@ -21,12 +16,18 @@ def next(stack,x,y,depth):
 
 def maze():
     stack = [[1,1,2]]
+    size = [0,0]
     while len(stack)>0:
+        if size[0] < len(stack):
+            size[0] = len(stack)
         x,y,depth = stack.pop()
         Map[x][y] = depth
         if x == Gx and y == Gy:
-            return depth
+            #print('maxsize='+str(size))
+            #print('O='+str(time))
+            return size
         next(stack,x,y,depth)
+        size[1] = size[1] + 1
     return 'false'
 
 def route(depth):
@@ -58,7 +59,37 @@ def route(depth):
     return route
 
 if __name__ == '__main__':
-    result=maze()
-    np.set_printoptions(threshold=np.inf)
-    print (np.array(Map))
-    print(np.array(route(result)))
+    #[max, ave, min]
+    #result[0]=size, [1]=time
+    size=[0,0,100000000]
+    sizevar=[]
+    time=[0,0,100000000]
+    timevar=[]
+    Maps= glob.glob("./6045/*")
+    for Map in Maps:
+        #print(Map)
+        with open (Map,'r',encoding='utf-8')as f:
+            Map = [list(map(int,data.strip())) for data in f.readlines()]
+        f.close()
+        result=maze()
+        if size[0] < result[0]: #Max
+            size[0] = result[0]
+        if time[0] < result[1]:
+            time[0] = result[1]
+        if size[2] > result[0]:
+            size[2] = result[0]
+        if time[2] >result[1]:
+            time[2] = result[1]
+        sizevar.append(result[0])
+        timevar.append(result[1])
+        size[1]+=result[0]
+        time[1]+=result[1]
+print("#DFS#")
+print("----Time----")
+print("Max="+str(time[0])+"\n"+"Min="+str(time[2])+"\n"+"Ave="+str(time[1]/100))
+print("var="+str(np.var(timevar)))
+print("std="+str(np.var(timevar)**0.5))
+print("----Size----")
+print("Max="+str(size[0])+"\n"+"Min="+str(size[2])+"\n"+"Ave="+str(size[1]/100))
+print("var="+str(np.var(sizevar)))
+print("std="+str(np.var(sizevar)**0.5))
